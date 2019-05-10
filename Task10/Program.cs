@@ -160,10 +160,8 @@ namespace Task10
             while (buf!= null)
             {
                 Point buf2 = p2;
-                Console.WriteLine(1);
                 while (buf2!= null)
                 {
-                    Console.WriteLine(2);
                     res = AddPointToEnd(res, buf.ACoeff * buf2.ACoeff, buf.ICoeff + buf2.ICoeff);
                     buf2 = buf2.next;
                 }
@@ -176,24 +174,23 @@ namespace Task10
         {
             Point res = new Point();
             Point buf = p;
-            while(buf.next!=null)
+            double lastTemp = p.ICoeff+1.45;
+            while(buf!=null)
             {
                 Point currentEl = buf.next;
                 int temp = buf.ICoeff;
                 double a = buf.ACoeff;
-                while (currentEl != null)
+                if (temp != lastTemp)
                 {
-                    if (currentEl.ICoeff == temp&&currentEl.AlreadyUsed==false)
+                    while (currentEl != null)
                     {
-                        a += currentEl.ACoeff;
-                        currentEl.pred.next = currentEl.next;
-                        if (currentEl .next != null)
-                            currentEl.next.pred = currentEl.pred;
-                        currentEl.AlreadyUsed = true;
+                        if (currentEl.ICoeff == temp)
+                            a += currentEl.ACoeff;
+                        currentEl = currentEl.next;
                     }
-                    currentEl = currentEl.next;
+                    res = AddPointToEnd(res, a, temp);
                 }
-                res = AddPointToEnd(res, a, temp);
+                lastTemp = buf.ICoeff;
                 buf = buf.next;
             }
             return res;
@@ -247,6 +244,7 @@ namespace Task10
             ShowList(p);
             p = DelFirstElem(p);
             p = Same(p);
+            p = DelFirstElem(p);
             ShowList(p);
         }
     }
