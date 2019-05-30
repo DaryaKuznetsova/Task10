@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,12 +12,12 @@ namespace Task10
     {
         class Point
         {
-            double aCoeff;
+            int aCoeff;
             int iCoeff;
             bool alreadyUsed;
             public Point next, pred;
 
-            public double ACoeff
+            public int ACoeff
             {
                 get { return aCoeff; }
                 set { aCoeff = value; }
@@ -43,7 +44,7 @@ namespace Task10
                 alreadyUsed = false;
             }
 
-            public Point(double a, int d)
+            public Point(int a, int d)
             {
                 ICoeff = d;
                 ACoeff = a;
@@ -66,54 +67,40 @@ namespace Task10
             return p;
         }
 
-        static Point MakeList2(int size, bool rand) //формирование двунаправленного списка
-                                                    //добавление в начало
+        static Point MakeList2(string filename) //формирование двунаправленного списка                                                   //добавление в начало
         {
             int a = 0;
             int i = 0;
-            if (size == 0) return null;
-            if (size != 0)
+            string temp;
+            StreamReader sr = new StreamReader(filename);
+            try
             {
-                if (rand)
+                do
                 {
-                    a = rnd.Next(0, 100);
-                    i = rnd.Next(0, 3);
-                }
-                else
-                {
-                    Console.WriteLine("введите элементы списка");
-                    a = ReadAnswer();
-                    i = ReadAnswer();
-                }
+                    temp = Convert.ToString(sr.ReadLine());
+                    string[] words = temp.Split(new char[] { ' ' });
+                    a = Convert.ToInt32(words[0]);
+                    i = Convert.ToInt32(words[1]);
+                } while (a == 0);
+            }
+            catch(Exception )
+            {
+                Console.WriteLine("!!!!!!");
             }
             Point beg = MakePoint(a, i);
-            for (int j = 1; j < size; j++)
-                beg = AddPointToEnd(beg, rand);
-
+            while ((temp=sr.ReadLine()) != null)
+            {
+               string[] words = temp.Split(new char[] { ' ' });
+                a = Convert.ToInt32(words[0]);
+                i = Convert.ToInt32(words[1]);
+                if(a!=0)
+                beg = AddPointToEnd(beg, a, i);
+            }
             Console.WriteLine("список сформирован");
+            sr.Close();
             return beg;
         }
 
-        static Point AddPointToEnd(Point beg, bool rand)
-        {
-            int a = 0;
-            int i = 0;
-            
-                if (rand)
-                {
-                    a = rnd.Next(0, 100);
-                    i = rnd.Next(0, 3);
-                }
-                else
-                {
-                    Console.WriteLine("введите элементы списка");
-                    a = ReadAnswer();
-                    i = ReadAnswer();
-                }
-           
-            return AddPointToEnd(beg, a, i);
-            //добавить элемент в конец списка
-        }
 
         static Point AddPointToEnd(Point beg, double a, int i)
         {
@@ -135,12 +122,38 @@ namespace Task10
                 currentEl = currentEl.next;
                 else
                 {
-                    currentEl.pred.next = currentEl.next; // удаляем нужный элемент
-                    if (currentEl.next != null)
-                        currentEl.next.pred = currentEl.pred; 
+                    currentEl  = Delete(currentEl);
                 }
             }
-            return beg;
+            while (currentEl.pred != null)
+                currentEl = currentEl.pred;
+            return currentEl;
+        }
+
+        static Point Delete(Point beg)
+        {
+            Point currentEl = beg;
+            if (currentEl.pred == null)
+            {
+                Console.WriteLine(currentEl.ICoeff);
+                currentEl = DelFirstElem(currentEl);
+            }
+            else
+            {
+                currentEl.pred.next = currentEl.next; // удаляем нужный элемент
+                if (currentEl.next != null)
+                    currentEl.next.pred = currentEl.pred;
+            }
+            return currentEl;
+        }
+
+        static Point Iter(Point beg)
+        {
+            if (beg.pred == null)
+                beg = DelFirstElem(beg);
+            if (beg.next != null)
+                return beg.next;
+            else return beg;
         }
 
         static Point DelFirstElem(Point beg)
@@ -150,8 +163,6 @@ namespace Task10
                 beg.pred = null;
             return beg;
         }
-
-
 
         static Point Mult(Point p1, Point p2)
         {
@@ -174,12 +185,12 @@ namespace Task10
         {
             Point res = new Point();
             Point buf = p;
-            double lastTemp = p.ICoeff+1.45;
+            int lastTemp = p.ICoeff;
             while(buf!=null)
             {
                 Point currentEl = buf.next;
                 int temp = buf.ICoeff;
-                double a = buf.ACoeff;
+                int a = buf.ACoeff;
                 if (temp != lastTemp)
                 {
                     while (currentEl != null)
@@ -198,7 +209,6 @@ namespace Task10
 
         static void ShowList(Point beg)
         {
-
             Point p = beg;
             if (beg != null)
             {
@@ -213,9 +223,26 @@ namespace Task10
             else Console.WriteLine("список пуст");
         }
 
+        static void RewriteList(Point beg)
+        {
+            StreamWriter sw = new StreamWriter("output.txt");
+            Point p = beg;
+            if (beg != null)
+            {
+                while (p.next!= null)
+                {
+                    sw.WriteLine(p.ACoeff + " " + p.ICoeff);
+                    p = p.next;
+                }
+                sw.WriteLine(p.ACoeff + " " + p.ICoeff);
+            }
+            else Console.WriteLine("список пуст");
+            sw.Close();
+        }
+
 
         public static int ReadAnswer()
-        {
+        {;
             int a = 0;
             bool ok = false;
             do
@@ -236,16 +263,21 @@ namespace Task10
         static void Main(string[] args)
         {
             Point p1 = new Point();
-            p1 = MakeList2(2, false);
+            p1 = MakeList2("input1.txt");
             Point p2 = new Point();
-            p2 = MakeList2(2, false);
+            p2 = MakeList2("input2.txt");
             Point p = new Point(p1.ACoeff * p2.ACoeff, p1.ICoeff + p2.ICoeff);
             p = Mult(p1, p2);
             ShowList(p);
             p = DelFirstElem(p);
+            ShowList(p);
             p = Same(p);
+            ShowList(p);
             p = DelFirstElem(p);
             ShowList(p);
+            p = DelThisElement(p);
+            ShowList(p);
+            RewriteList(p);
         }
     }
 }
