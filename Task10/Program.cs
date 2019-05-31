@@ -14,7 +14,6 @@ namespace Task10
         {
             int aCoeff;
             int iCoeff;
-            bool alreadyUsed;
             public Point next, pred;
 
             public int ACoeff
@@ -29,19 +28,12 @@ namespace Task10
                 set { iCoeff = value; }
             }
 
-            public bool AlreadyUsed
-            {
-                get { return alreadyUsed; }
-                set { alreadyUsed = value; }
-            }
-
             public Point()
             {
                 ACoeff = 0;
                 ICoeff = 0;
                 next = null;
                 pred = null;
-                alreadyUsed = false;
             }
 
             public Point(int a, int d)
@@ -50,7 +42,6 @@ namespace Task10
                 ACoeff = a;
                 next = null;
                 pred = null;
-                alreadyUsed = false;
             }
 
             public override string ToString()
@@ -61,7 +52,7 @@ namespace Task10
 
         static Random rnd = new Random();
 
-        static Point MakePoint(double a, int i)
+        static Point MakePoint(int a, int i)
         {
             Point p = new Point(a, i);
             return p;
@@ -102,7 +93,7 @@ namespace Task10
         }
 
 
-        static Point AddPointToEnd(Point beg, double a, int i)
+        static Point AddPointToEnd(Point beg, int a, int i)
         {
             Point p = MakePoint(a, i); 
             Point buf = beg;
@@ -113,7 +104,7 @@ namespace Task10
             return beg;
         }
 
-        static Point DelThisElement(Point beg)
+        static Point DelThisElement(Point beg) // удаляем элемент с нулевым коэффициентом
         {
             Point currentEl = beg;
             while (currentEl.next != null)
@@ -133,9 +124,8 @@ namespace Task10
         static Point Delete(Point beg)
         {
             Point currentEl = beg;
-            if (currentEl.pred == null)
+            if (currentEl.pred == null) // удаляем первый элемент
             {
-                Console.WriteLine(currentEl.ICoeff);
                 currentEl = DelFirstElem(currentEl);
             }
             else
@@ -147,15 +137,6 @@ namespace Task10
             return currentEl;
         }
 
-        static Point Iter(Point beg)
-        {
-            if (beg.pred == null)
-                beg = DelFirstElem(beg);
-            if (beg.next != null)
-                return beg.next;
-            else return beg;
-        }
-
         static Point DelFirstElem(Point beg)
         {
             beg = beg.next;
@@ -164,7 +145,7 @@ namespace Task10
             return beg;
         }
 
-        static Point Mult(Point p1, Point p2)
+        static Point Mult(Point p1, Point p2) // умножение
         {
             Point res = new Point();
             Point buf = p1;
@@ -181,30 +162,41 @@ namespace Task10
             return res;
         }
 
-        static Point Same(Point p)
+
+        static Point Same(Point beg) // подобные
         {
             Point res = new Point();
-            Point buf = p;
-            int lastTemp = p.ICoeff;
-            while(buf!=null)
+            Point currentEl = new Point();
+            while(beg.next!=null) // от первого слагаемого
             {
-                Point currentEl = buf.next;
-                int temp = buf.ICoeff;
-                int a = buf.ACoeff;
-                if (temp != lastTemp)
+                currentEl = beg.next;
+                int a = beg.ACoeff;
+                int i = beg.ICoeff;
+                while(currentEl.next!=null) // посик слагаемых с той же степенью
                 {
-                    while (currentEl != null)
+                    if(currentEl.ICoeff==i) // если степень равна, коэффициенты складываем
                     {
-                        if (currentEl.ICoeff == temp)
-                            a += currentEl.ACoeff;
-                        currentEl = currentEl.next;
-                    }
-                    res = AddPointToEnd(res, a, temp);
+                        a += currentEl.ACoeff;
+                        currentEl.pred.next = currentEl.next; // слагаемое вычеркиваем (уничтожилось)
+                        currentEl.next.pred = currentEl.pred;
+                    }                    
+                        currentEl = currentEl.next; // переходим к следующему
                 }
-                lastTemp = buf.ICoeff;
-                buf = buf.next;
+               
+                // вышли из цикла проверяем последний элемент
+                if (currentEl.ICoeff == i)
+                {
+                    a += currentEl.ACoeff;
+                    currentEl.pred.next = null;
+                }
+                while (currentEl.pred != null) currentEl = currentEl.pred; // возвращаемся в начало списка
+                if (a != 0)
+                    res = AddPointToEnd(res, a, i); // добавляем в новый список новое слагаемое
+                beg = beg.next;
             }
+            res = AddPointToEnd(res, beg.ACoeff, beg.ICoeff); // добавляем в список последнее слагаемое
             return res;
+
         }
 
         static void ShowList(Point beg)
@@ -268,13 +260,7 @@ namespace Task10
             p2 = MakeList2("input2.txt");
             Point p = new Point(p1.ACoeff * p2.ACoeff, p1.ICoeff + p2.ICoeff);
             p = Mult(p1, p2);
-            ShowList(p);
-            p = DelFirstElem(p);
-            ShowList(p);
             p = Same(p);
-            ShowList(p);
-            p = DelFirstElem(p);
-            ShowList(p);
             p = DelThisElement(p);
             ShowList(p);
             RewriteList(p);
