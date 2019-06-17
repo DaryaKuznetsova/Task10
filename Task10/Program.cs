@@ -76,7 +76,7 @@ namespace Task10
             }
             catch(Exception )
             {
-                Console.WriteLine("!!!!!!");
+                Console.WriteLine("Неверный формат входных данных");
             }
             Point beg = MakePoint(a, i);
             while ((temp=sr.ReadLine()) != null)
